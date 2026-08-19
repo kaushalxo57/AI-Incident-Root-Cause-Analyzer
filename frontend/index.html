@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Incident & Root-Cause Analyzer</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Minimal Top Nav -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="cyber-accent">■</span>
+                <h1>INCIDENT_ANALYSIS_SYSTEM // <span class="tagline">ROOT_CAUSE_ENGINE</span></h1>
+            </div>
+            
+            <!-- Global Status Telemetry -->
+            <div class="telemetry-bar">
+                <span class="telemetry-label">SYSTEM_STATUS:</span>
+                <span id="global-status-indicator" class="status-indicator status-ok">OPERATIONAL</span>
+                <span class="telemetry-sep">|</span>
+                <span class="telemetry-label">ACTIVE_INCIDENTS:</span>
+                <span id="global-active-count" class="telemetry-value">0</span>
+            </div>
+
+            <!-- Tab Navigation Links -->
+            <nav class="app-tabs">
+                <button class="tab-btn active" id="tab-dashboard" onclick="switchTab('dashboard')">01_DASHBOARD</button>
+                <button class="tab-btn" id="tab-incidents" onclick="switchTab('incidents')">02_INCIDENTS</button>
+                <button class="tab-btn" id="tab-services" onclick="switchTab('services')">03_SERVICES</button>
+                <button class="tab-btn" id="tab-upload" onclick="switchTab('upload')">04_LOG_INGEST</button>
+            </nav>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="app-content">
+
+            <!-- TAB: DASHBOARD -->
+            <section id="pane-dashboard" class="tab-pane active">
+                <!-- System KPI Grid -->
+                <div class="kpi-grid">
+                    <div class="kpi-card" id="kpi-health">
+                        <div class="kpi-meta">SYSTEM_HEALTH</div>
+                        <div class="kpi-value"><span id="metric-health">--</span>%</div>
+                        <div class="kpi-bar-container"><div id="metric-health-bar" class="kpi-bar" style="width: 0%"></div></div>
+                    </div>
+                    <div class="kpi-card" id="kpi-incidents">
+                        <div class="kpi-meta">ACTIVE_INCIDENTS</div>
+                        <div class="kpi-value" id="metric-incidents">--</div>
+                        <div class="kpi-footer text-crimson" id="incident-sub-meta">CRITICAL STATUS</div>
+                    </div>
+                    <div class="kpi-card" id="kpi-services">
+                        <div class="kpi-meta">MONITORED_SERVICES</div>
+                        <div class="kpi-value" id="metric-services">--</div>
+                        <div class="kpi-footer" id="services-sub-meta">ACTIVE RECTIFIER</div>
+                    </div>
+                    <div class="kpi-card" id="kpi-events">
+                        <div class="kpi-meta">EVENTS_PARSED</div>
+                        <div class="kpi-value" id="metric-events">--</div>
+                        <div class="kpi-footer" id="events-sub-meta">LOGGED BUFFER</div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Charts and Layout -->
+                <div class="dashboard-grid">
+                    <!-- Column 1: Active Incidents and error rates -->
+                    <div class="dashboard-col-left">
+                        <div class="section-container">
+                            <h2 class="section-title">■ ACTIVE_INCIDENTS_TELEMETRY</h2>
+                            <div id="active-incidents-list" class="incident-list-container">
+                                <!-- Dynamic items loaded via JavaScript -->
+                                <div class="loading-placeholder">FETCHING ACTIVE ALERTS...</div>
+                            </div>
+                        </div>
+
+                        <div class="section-container mt-2">
+                            <h2 class="section-title">■ SYSTEM_ERROR_RATE_TIMELINE</h2>
+                            <div class="chart-container">
+                                <canvas id="errorRateChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Service Grid & Severity distributions -->
+                    <div class="dashboard-col-right">
+                        <div class="section-container">
+                            <h2 class="section-title">■ SERVICES_MATRIX_STATUS</h2>
+                            <div id="dashboard-services-grid" class="services-mini-grid">
+                                <!-- Dynamic items -->
+                                <div class="loading-placeholder">LOADING MATRIX...</div>
+                            </div>
+                        </div>
+
+                        <div class="section-container mt-2">
+                            <h2 class="section-title">■ SEVERITY_DISTRIBUTION</h2>
+                            <div class="chart-container-small">
+                                <canvas id="severityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: INCIDENTS -->
+            <section id="pane-incidents" class="tab-pane">
+                <div class="incidents-workspace">
+                    <!-- Filters & List Pane -->
+                    <div class="incidents-sidebar">
+                        <div class="filter-panel">
+                            <input type="text" id="incidents-search" placeholder="SEARCH // title, root cause, description..." oninput="filterIncidents()">
+                            <div class="filter-selects">
+                                <select id="filter-severity" onchange="filterIncidents()">
+                                    <option value="">ALL_SEVERITIES</option>
+                                    <option value="CRITICAL">CRITICAL</option>
+                                    <option value="HIGH">HIGH</option>
+                                    <option value="MEDIUM">MEDIUM</option>
+                                    <option value="LOW">LOW</option>
+                                </select>
+                                <select id="filter-status" onchange="filterIncidents()">
+                                    <option value="">ALL_STATUSES</option>
+                                    <option value="OPEN">OPEN</option>
+                                    <option value="INVESTIGATING">INVESTIGATING</option>
+                                    <option value="RESOLVED">RESOLVED</option>
+                                    <option value="CLOSED">CLOSED</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="incidents-list" class="incident-sidebar-list">
+                            <!-- Dynamic items -->
+                        </div>
+                    </div>
+
+                    <!-- Detail Pane -->
+                    <div class="incidents-details-container" id="incident-detail-pane">
+                        <div class="detail-empty-state">
+                            <div class="empty-state-cross">/ /</div>
+                            <p>SELECT AN INCIDENT ENTRY TO DECRYPT EVIDENCE CHAIN</p>
+                        </div>
+                        <!-- Dynamic Content Loaded here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: SERVICES -->
+            <section id="pane-services" class="tab-pane">
+                <div class="section-container">
+                    <h2 class="section-title">■ SYSTEM_SERVICES_HEALTH_MATRIX</h2>
+                    <table class="cyber-table">
+                        <thead>
+                            <tr>
+                                <th>SERVICE_NAME</th>
+                                <th>TYPE</th>
+                                <th>HEALTH_STATUS</th>
+                                <th>RECENT_ERROR_RATE (15m)</th>
+                                <th>ANOMALY_COUNT (1h)</th>
+                                <th>LAST_UPDATED</th>
+                            </tr>
+                        </thead>
+                        <tbody id="services-table-body">
+                            <!-- Dynamic items -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB: UPLOAD -->
+            <section id="pane-upload" class="tab-pane">
+                <div class="upload-container">
+                    <div class="section-container">
+                        <h2 class="section-title">■ LOG_INGESTION_TERMINAL</h2>
+                        <div class="drop-zone" id="log-drop-zone">
+                            <div class="terminal-prompt">> INGESTION CHANNEL OPENED.</div>
+                            <div class="terminal-instructions">DRAG AND DROP LOG FILE OR CLICK TO BROWSE LOCAL STORAGE</div>
+                            <div class="terminal-sub-instructions">SUPPORTED CHANNELS: .log // .txt // .csv // .json (MAX 10MB)</div>
+                            <input type="file" id="log-file-input" style="display: none;" onchange="handleFileSelect(event)">
+                        </div>
+
+                        <div class="upload-progress-container" id="upload-progress-area" style="display: none;">
+                            <div class="progress-header">
+                                <span class="filename" id="upload-filename">log_stream.log</span>
+                                <span class="percentage" id="upload-percent">0%</span>
+                            </div>
+                            <div class="progress-bar-outer">
+                                <div class="progress-bar-inner" id="upload-progress-bar" style="width: 0%"></div>
+                            </div>
+                            <div class="progress-status" id="upload-status-text">UPLOADING...</div>
+                        </div>
+
+                        <div class="section-container mt-2" id="analysis-log-container" style="display: none;">
+                            <h3 class="section-title">■ INGESTION_RESULT_OUTPUT</h3>
+                            <div class="terminal-output" id="terminal-log-output">
+                                <!-- Ingestion log logs will print line by line -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <span class="footer-tag">// AI_INCIDENT_ROOT_CAUSE_DETECTOR v1.0.0</span>
+            <span class="footer-tag" id="footer-connection-status">CONNECTION: ESTABLISHED</span>
+        </footer>
+    </div>
+    
+    <!-- Core Application Javascript -->
+    <script src="/js/app.js"></script>
+</body>
+</html>

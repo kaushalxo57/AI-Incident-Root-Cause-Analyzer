@@ -1,0 +1,23 @@
+[2026-08-19 10:00:00] [gateway-service] [INFO] [req-52ef389d] GET /health - 200 OK
+[2026-08-19 10:00:05] [payment-api] [INFO] [req-71cb943d] Init payment transaction provider stripe
+[2026-08-19 10:01:00] [database] [INFO] Connection pool size is 20/100 (idle=15, active=5)
+[2026-08-19 10:02:10] [gateway-service] [INFO] [req-3d44ba58] POST /api/checkout - user_id=4828
+[2026-08-19 10:02:11] [payment-api] [INFO] [req-3d44ba58] Processing transaction token tok_184288
+[2026-08-19 10:02:12] [database] [INFO] SELECT * FROM users WHERE id = 4828 - 2ms
+[2026-08-19 10:05:00] [gateway-service] [INFO] [req-82bf4781] GET /api/products - 200 OK
+[2026-08-19 10:08:00] [database] [INFO] SELECT * FROM products LIMIT 50 - 4ms
+[2026-08-19 10:11:00] [database] [WARNING] Connection pool utilization at 92% (active=92, max=100)
+[2026-08-19 10:11:15] [gateway-service] [INFO] [req-11af9902] GET /api/cart - user_id=9821
+[2026-08-19 10:11:16] [database] [INFO] SELECT * FROM cart WHERE user_id = 9821 - 85ms (slow query)
+[2026-08-19 10:12:00] [database] [CRITICAL] FATAL: remaining connection slots are reserved for non-replication superuser connections
+[2026-08-19 10:12:30] [database] [CRITICAL] FATAL: remaining connection slots are reserved for non-replication superuser connections
+[2026-08-19 10:13:00] [payment-api] [ERROR] [req-2c38da91] Database timeout occurred. Retrying connection... (Attempt 1/3)
+[2026-08-19 10:13:05] [payment-api] [ERROR] [req-2c38da91] Database timeout occurred. Retrying connection... (Attempt 2/3)
+[2026-08-19 10:13:10] [payment-api] [ERROR] [req-2c38da91] Database timeout occurred. Retrying connection... (Attempt 3/3)
+[2026-08-19 10:13:15] [payment-api] [CRITICAL] [req-2c38da91] Payment operation failed: Unable to connect to postgresql-db:5432
+[2026-08-19 10:13:20] [gateway-service] [ERROR] [req-2c38da91] GET /checkout response HTTP status 500: Internal Server Error in payment-api
+[2026-08-19 10:14:00] [payment-api] [ERROR] [req-49e89d11] Database timeout occurred. Retrying connection...
+[2026-08-19 10:14:02] [payment-api] [CRITICAL] [req-49e89d11] Payment operation failed: Unable to connect to postgresql-db:5432
+[2026-08-19 10:14:05] [gateway-service] [ERROR] [req-49e89d11] GET /checkout response HTTP status 500: Internal Server Error in payment-api
+[2026-08-19 10:14:15] [gateway-service] [ERROR] [req-50a8d29b] GET /checkout response HTTP status 503: payment-api unavailable
+[2026-08-19 10:14:30] [gateway-service] [ERROR] [req-99ab114e] GET /checkout response HTTP status 503: payment-api unavailable
